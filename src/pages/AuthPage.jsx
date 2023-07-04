@@ -1,6 +1,7 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Col, Form, Image, Modal, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import useLocalStorage from "use-local-storage";
 
 export default function AuthPage() {
@@ -14,6 +15,11 @@ export default function AuthPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [authToken, setAuthToken] = useLocalStorage("authToken", "");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (authToken) navigate("/profile");
+  }, [authToken, navigate]);
 
   const handleSignUp = async (e) => {
     e.preventDefault();
