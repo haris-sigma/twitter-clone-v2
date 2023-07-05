@@ -1,7 +1,9 @@
 import { useEffect } from "react";
-import { Button, Container, Navbar } from "react-bootstrap";
+import { Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import useLocalStorage from "use-local-storage";
+import ProfileMidBody from "../components/ProfileMidBody";
+import ProfileSideBar from "../components/ProfileSideBar";
 
 export default function ProfilePage() {
   const [authToken, setAuthToken] = useLocalStorage("authToken", "");
@@ -13,21 +15,11 @@ export default function ProfilePage() {
   const handleLogout = () => setAuthToken("");
   return (
     <>
-      <Navbar bg="light">
-        <Container>
-          <Navbar.Brand href="/">
-            <i
-              className="bi bi-twitter"
-              style={{ fontSize: 30, color: "dodgerblue" }}
-            ></i>
-          </Navbar.Brand>
-          <Navbar.Collapse className="justify-content-end">
-            <Button onClick={handleLogout}>Logout</Button>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      <Container className="mt-3">
-        <h2> Your profile </h2>
+      <Container>
+        <Row>
+          <ProfileSideBar handleLogout={handleLogout} />
+          <ProfileMidBody />
+        </Row>
       </Container>
     </>
   );
