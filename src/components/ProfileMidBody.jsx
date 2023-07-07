@@ -1,23 +1,19 @@
 import jwtDecode from "jwt-decode";
-import { useEffect, useState } from "react";
-import { Button, Col, Image, Nav, Row } from "react-bootstrap";
+import { useEffect } from "react";
+import { Button, Col, Image, Nav, Row, Spinner } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPostsByUser } from "../features/posts/postsSlice";
 import ProfilePostCard from "./ProfilePostCard";
 
 export default function ProfileMidBody() {
-  const [posts, setPosts] = useState([]);
   const url =
     "https://pbs.twimg.com/profile_banners/83072625/1602845571/1500x500";
   const pic =
     "https://pbs.twimg.com/profile_images/1587405892437221376/h167Jlb2_400x400.jpg";
 
-  const fetchPosts = (userId) => {
-    fetch(
-      `https://twitter-api-sigmaschooltech.sigma-school-full-stack.repl.co/posts/user/${userId}`
-    )
-      .then((response) => response.json())
-      .then((data) => setPosts(data))
-      .catch((error) => console.error("error:", error));
-  };
+  const dispatch = useDispatch();
+  const posts = useSelector((state) => state.posts.posts);
+  const loading = useSelector((state) => state.posts.loading);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -25,9 +21,9 @@ export default function ProfileMidBody() {
       const decodedToken = jwtDecode(token);
       const userId = decodedToken.id;
       console.log(userId);
-      fetchPosts(userId);
+      dispatch(fetchPostsByUser(userId));
     }
-  }, []);
+  }, [dispatch]);
   return (
     <Col sm={6} className="bg-light" style={{ border: "1px solid lightgrey" }}>
       <Image src={url} fluid />
@@ -80,6 +76,9 @@ export default function ProfileMidBody() {
           <Nav.Link eventKey="likes">Likes</Nav.Link>
         </Nav.Item>
       </Nav>
+      {loading && (
+        <Spinner animation="border" className="ms-3 mt-3" variant="primary" />
+      )}
       {posts.map((post) => (
         <ProfilePostCard key={post.id} content={post.content} />
       ))}
