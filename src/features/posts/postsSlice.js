@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
-import { db } from "../../firebase";
+import { db, storage } from "../../firebase";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export const fetchPostsByUser = createAsyncThunk(
   "posts/fetchByUser",
@@ -24,17 +25,23 @@ export const fetchPostsByUser = createAsyncThunk(
 
 export const savePost = createAsyncThunk(
   "posts/savePost",
-  async ({ userId, postContent }) => {
+  async ({ userId, postContent, file }) => {
     try {
+      let imageUrl = "";
+      console.log(file);
+      if (file !== null) {
+        const imageRef = ref(storage, `posts/${file.name}`);
+        const response = await uploadBytes(imageRef, file);
+        imageUrl = await getDownloadURL(response.ref);
+      }
       const postsRef = collection(db, `users/${userId}/posts`);
       const newPostRef = doc(postsRef);
-      await setDoc(newPostRef, { content: postContent, likes: [] });
+      await setDoc(newPostRef, { content: postContent, likes: [], imageUrl });
       const newPost = await getDoc(newPostRef);
 
-      const post = {
-        id: newPost.id,
-        ...newPost.data(),
-      };
+      const post = { id: newPost.id, ...newPost.data() };
+      // const post = { id: 'a', ...{content: 'hello', likes: [], imageUrl: 'aa'} };
+      // const post = { id: 'a', content: 'hello', likes: [], imageUrl: 'aa' };
 
       return post;
     } catch (error) {
@@ -100,6 +107,7 @@ const postsSlice = createSlice({
         state.loading = false;
       })
       .addCase(savePost.fulfilled, (state, action) => {
+        // action.payload = const post = { id: 'a', content: 'hello', likes: [], imageUrl: 'aa' };
         state.posts = [action.payload, ...state.posts];
       })
       .addCase(likePost.fulfilled, (state, action) => {
