@@ -1,7 +1,54 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { db, storage } from "../../firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+
+export const updatePost = createAsyncThunk(
+  "posts/updatePost",
+  async ({ userId, postId, newPostContent, newFile }) => {
+    // Removed semicolon before the parameters.
+    try {
+      let newImageUrl;
+
+      if (newFile) {
+        const imageRef = ref(storage, `posts/${newFile.name}`);
+        const response = await uploadBytes(imageRef, newFile);
+        newImageUrl = await getDownloadURL(response.ref);
+      }
+
+      const postRef = doc(db, `users/${userId}/posts/${postId}`);
+      const postSnap = await getDoc(postRef);
+      if (postSnap.exists()) {
+        const postData = postSnap.data();
+        const imageUrl = newImageUrl ?? postData.imageUrl ?? "";
+        // const imageUrl = null ?? postData.imageUrl ?? "";
+        // const imageUrl =  postData.imageUrl ?? "";
+        // const imageUrl =  null ?? "";
+        // const imageUrl =   "";
+        const updatedData = {
+          ...postData,
+          content: newPostContent || postData.content,
+          imageUrl,
+        };
+        await updateDoc(postRef, updatedData);
+        const updatedPost = { id: postId, ...updatedData };
+        return updatedPost;
+      } else {
+        throw new Error("post does not exist");
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+);
 
 export const fetchPostsByUser = createAsyncThunk(
   "posts/fetchByUser",
@@ -128,6 +175,17 @@ const postsSlice = createSlice({
           state.posts[postIndex].likes = state.posts[postIndex].likes.filter(
             (id) => id !== userId
           );
+        }
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        const updatedPost = action.payload;
+
+        const postIndex = state.posts.findIndex(
+          (post) => post.id === updatedPost.id
+        );
+
+        if (postIndex !== -1) {
+          state.posts[postIndex] = updatedPost;
         }
       });
   },

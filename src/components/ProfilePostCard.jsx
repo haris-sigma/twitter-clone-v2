@@ -3,6 +3,7 @@ import { Button, Col, Image, Row } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { likePost, removeLikeFromPost } from "../features/posts/postsSlice";
 import { AuthContext } from "./AuthProvider";
+import UpdatePostModal from "./UpdatePostModal";
 
 export default function ProfilePostCard({ post }) {
   const { content, id: postId, imageUrl } = post;
@@ -10,6 +11,11 @@ export default function ProfilePostCard({ post }) {
   const dispatch = useDispatch();
   const { currentUser } = useContext(AuthContext);
   const userId = currentUser.uid;
+
+  const [showUpdateModel, setShowUpdateModel] = useState(false);
+
+  const handleShowUpdateModal = () => setShowUpdateModel(true);
+  const handleCloseUpdateModal = () => setShowUpdateModel(false);
 
   // user has liked the post if their id is in the likes array
   const isLiked = likes.includes(userId);
@@ -63,11 +69,20 @@ export default function ProfilePostCard({ post }) {
             {likes.length}
           </Button>
           <Button variant="light">
-            <i className="bi bi-graph-up"></i> 61
+            <i
+              className="bi bi-pencil-square"
+              onClick={handleShowUpdateModal}
+            ></i>
           </Button>
           <Button variant="light">
-            <i className="bi bi-upload"></i>
+            <i className="bi bi-trash"></i>
           </Button>
+          <UpdatePostModal
+            show={showUpdateModel}
+            handleClose={handleCloseUpdateModal}
+            postId={postId}
+            originalPostContent={content}
+          />
         </div>
       </Col>
     </Row>
