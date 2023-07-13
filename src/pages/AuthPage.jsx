@@ -144,7 +144,7 @@ export default function AuthPage() {
                 purposes outlined in our Privacy Policy, like keeping your
                 account secure and personalising our services, including ads.
                 Learn more. Others will be able to find you by email or phone
-                number, when provided, unless you choose otherwise here.
+                number, when provided, unless you choose otherwise.
               </p>
               <Button className="rounded-pill" type="submit">
                 {modalShow === "signup" ? "Sign up" : "Log in"}
